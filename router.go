@@ -2,7 +2,7 @@ package literatecarnival
 
 type IPFSRouting interface {
 	// Get a particular peer network address
-	FindPeer(node NodeID)
+	FindPeer(node NodeId)
 	// stores a small metadata value in DHT
 	SetValue(key []byte, value []byte)
 	// retrieves small meta data value
@@ -11,4 +11,7 @@ type IPFSRouting interface {
 	ProvideValue(key Multihash)
 	//Get a number of peers serving a large value
 	FindValuePeers(key Multihash, min int)
+}
+
+type Router struct {
 }

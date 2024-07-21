@@ -19,6 +19,8 @@ type Node struct {
 	// Private and public key should be encrypted with passcode
 	PubKey PublicKey
 	PriKey PrivateKey
+	//Routing table, should not be access from other code
+	router IPFSRouting
 }
 
 func count_preceding_zero(hash []byte) int {
