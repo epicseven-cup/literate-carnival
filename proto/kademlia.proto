@@ -1,0 +1,6 @@
+service Kademlia {
+    rpc Ping(PING) returns PONG
+    rpc Store()
+    rpc Find_Node()
+    rpc Find_Value()
+}
