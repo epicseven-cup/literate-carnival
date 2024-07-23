@@ -4,3 +4,19 @@ service Kademlia {
     rpc Find_Node()
     rpc Find_Value()
 }
+
+
+message PING {
+}
+
+message FIND_NODE {
+    bytes NodeId
+}
+
+message NODE {
+    string Address
+    int Port
+    bytes NodeId
+}
+
+
