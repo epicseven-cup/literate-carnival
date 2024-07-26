@@ -1,22 +1,22 @@
-service Kademlia {
-    rpc Ping(PING) returns PONG
-    rpc Store()
-    rpc Find_Node()
-    rpc Find_Value()
-}
+syntax = "proto3";
+package proto;
 
+option go_package = "../proto";
 
 message PING {
+    bytes NodeId = 1;
+}
+
+message PONG {
+    bytes NodeId = 1;
 }
 
 message FIND_NODE {
-    bytes NodeId
+    bytes NodeId = 1;
 }
 
 message NODE {
-    string Address
-    int Port
-    bytes NodeId
+    string Address = 1;
+    int32 Port = 2;
+    bytes NodeId = 3;
 }
-
-

@@ -1,4 +1,4 @@
-package literatecarnival
+package types
 
 type Ledger struct {
 	owner      NodeId

@@ -1,4 +1,4 @@
-package literatecarnival
+package types
 
 type PeerProtocol interface {
 	open(nodeid NodeId, ledger Ledger)

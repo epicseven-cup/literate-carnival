@@ -1,4 +1,4 @@
-package literatecarnival
+package types
 
 import (
 	"crypto/sha256"

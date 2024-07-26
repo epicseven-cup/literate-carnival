@@ -1,4 +1,4 @@
-package literatecarnival
+package types
 
 type IPFSLink struct {
 	Name string
