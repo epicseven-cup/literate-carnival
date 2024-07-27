@@ -9,7 +9,7 @@ type Router struct {
 	bucket *types.Bucket
 }
 
-func NewRouter(size int) IPFSRouting {
+func NewRouter(size int) *Router {
 	return &Router{
 		values: map[string]types.IPFSObject{},
 		bucket: types.NewBucket(size),
