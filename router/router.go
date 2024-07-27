@@ -4,11 +4,14 @@ import (
 	"literatecarnival/types"
 )
 
-const (
-	NODEID_SIZE = 128
-)
-
 type Router struct {
 	values map[string]types.IPFSObject
-	bucket types.Bucket
+	bucket *types.Bucket
+}
+
+func NewRouter(size int) IPFSRouting {
+	return &Router{
+		values: map[string]types.IPFSObject{},
+		bucket: types.NewBucket(size),
+	}
 }

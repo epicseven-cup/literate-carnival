@@ -1,4 +1,4 @@
-package types
+package node
 
 import (
 	"crypto/sha256"
@@ -6,6 +6,9 @@ import (
 	"encoding/pem"
 	"literatecarnival/logger"
 	"literatecarnival/pki"
+	"literatecarnival/proto"
+	"literatecarnival/router"
+	"literatecarnival/types"
 )
 
 const (
@@ -15,12 +18,12 @@ const (
 )
 
 type Node struct {
-	NodeId Multihash
+	NodeId types.Multihash
 	// Private and public key should be encrypted with passcode
-	PubKey PublicKey
-	PriKey PrivateKey
+	PubKey types.PublicKey
+	PriKey types.PrivateKey
 	//Routing table, should not be access from other code
-	router IPFSRouting
+	router router.Router
 }
 
 func count_preceding_zero(hash []byte) int {
@@ -36,7 +39,7 @@ func count_preceding_zero(hash []byte) int {
 	return preceding_zero
 }
 
-func NewNode() *Node {
+func NewNode() IPFSRouting {
 	var nodeId []byte
 	var pubKey_bytes, privKey_bytes []byte
 	for count_preceding_zero(nodeId) < DIFFICULTY {
@@ -65,4 +68,12 @@ func NewNode() *Node {
 	}
 	node := Node{NodeId: nodeId, PubKey: pubKey_bytes, PriKey: privKey_bytes}
 	return &node
+}
+
+func (Node *Node) Ping(nodeId types.NodeId) types.NodeId {
+	return nil
+}
+
+func (Node *Node) FindPeer(nodeId types.NodeId) proto.NODE {
+	return proto.NODE{}
 }
