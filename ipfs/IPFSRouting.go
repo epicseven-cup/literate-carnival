@@ -1,4 +1,4 @@
-package node
+package ipfs
 
 import (
 	"literatecarnival/proto"
@@ -7,9 +7,9 @@ import (
 
 type IPFSRouting interface {
 	// Ping Node
-	Ping(node types.NodeId) types.NodeId
+	Ping(node types.NodeId) (*types.NodeId, error)
 	// Get a particular peer network address
-	FindPeer(node types.NodeId) proto.NODE
+	FindPeer(node types.NodeId) (*proto.NODE, error)
 	// // stores a small metadata value in DHT
 	// SetValue(key []byte, value []byte)
 	// // retrieves small meta data value

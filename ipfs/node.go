@@ -1,4 +1,4 @@
-package node
+package ipfs
 
 import (
 	"crypto/sha256"
@@ -77,18 +77,27 @@ func NewNode(size int) IPFSRouting {
 	return &node
 }
 
-func (node *Node) Ping(nodeId types.NodeId) types.NodeId {
-	return nil
+func (node *Node) Ping(nodeId types.NodeId) (*types.NodeId, error) {
+	return nil, nil
 }
 
-func (node *Node) Distance(nodeId types.NodeId) (int, Error) {
-	distance, err := xorId(node.NodeId, nodeId)
+func (node *Node) CurrentDistance(nodeId types.NodeId) (int, error) {
+	distanceBytes, err := xorId(node.NodeId, nodeId)
 	if err != nil {
 		logger.DefaultLogger.Fatalln(err)
 		return -1, err
 
 	}
-	return int(binary.BigEndian.Uint64(distance)), nil
+	return int(binary.BigEndian.Uint64(distanceBytes)), nil
+}
+
+func Distance(x types.NodeId, y types.NodeId) (int, error) {
+	distanceBytes, err := xorId(x, y)
+	if err != nil {
+		logger.DefaultLogger.Fatalln(err)
+		return -1, err
+	}
+	return int(binary.BigEndian.Uint64(distanceBytes)), nil
 }
 
 func xorId(x types.NodeId, y types.NodeId) ([]byte, error) {
@@ -103,11 +112,35 @@ func xorId(x types.NodeId, y types.NodeId) ([]byte, error) {
 	return result, nil
 }
 
-func (node *Node) FindPeer(nodeId types.NodeId) proto.NODE {
-	distance, err := node.Distance(nodeId)
+func (node *Node) FindPeer(nodeId types.NodeId) (*proto.NODE, error) {
+	distance, err := node.CurrentDistance(nodeId)
 	if err != nil {
 		logger.DefaultLogger.Fatalln(err)
+		return nil, err
+	}
+	kBuckets, err := node.router.GetKBuckets(distance)
+	if err != nil {
+		logger.DefaultLogger.Fatalln(err)
+		return nil, err
 	}
 
+	buckets := kBuckets.GetBuckets()
+	// Going through the buckets to see if one matchs the idea if not go to the closest one
+	for i := range buckets {
+		distance, err := Distance(buckets[i].GetNodeId(), nodeId)
+		if err != nil {
+			logger.DefaultLogger.Fatalln(err)
+			return nil, err
+		}
+
+		if distance == 0 {
+			return buckets[i], nil
+		} else {
+
+		}
+
+	}
 	return proto.NODE{}
 }
+
+func FindNode()

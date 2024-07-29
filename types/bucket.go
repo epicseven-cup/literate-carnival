@@ -7,18 +7,18 @@ const (
 )
 
 type Bucket struct {
-	buckets [NODEID_SIZE]*proto.NODE
+	buckets []*proto.NODE
 	size    int
 }
 
 func NewBucket(size int) *Bucket {
 	return &Bucket{
-		buckets: [NODEID_SIZE]*proto.NODE{},
+		buckets: make([]*proto.NODE, size),
 		size:    size,
 	}
 }
 
-func (bucket *Bucket) GetBuckets() [NODEID_SIZE]*proto.NODE {
+func (bucket *Bucket) GetBuckets() []*proto.NODE {
 	return bucket.buckets
 }
 
