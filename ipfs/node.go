@@ -24,8 +24,10 @@ type Node struct {
 	// Private and public key should be encrypted with passcode
 	PubKey types.PublicKey
 	PriKey types.PrivateKey
-	//Routing table, should not be access from other code
+	// Routing table, should not be access from other code
 	router *router.Router
+	// Message channel
+	message chan []byte
 }
 
 func count_preceding_zero(hash []byte) int {
@@ -75,6 +77,10 @@ func NewNode(size int) IPFSRouting {
 		router: router.NewRouter(size),
 	}
 	return &node
+}
+
+func SendPacket(packet types.Packet) {
+
 }
 
 func (node *Node) Ping(nodeId types.NodeId) (*types.NodeId, error) {
@@ -136,11 +142,9 @@ func (node *Node) FindPeer(nodeId types.NodeId) (*proto.NODE, error) {
 		if distance == 0 {
 			return buckets[i], nil
 		} else {
-
+			// Send UDP request to other nodes and wait on the channel to hear back
 		}
 
 	}
-	return proto.NODE{}
+	return &proto.NODE{}, nil
 }
-
-func FindNode()
