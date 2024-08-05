@@ -5,12 +5,13 @@ import (
 	"crypto/x509"
 	"encoding/binary"
 	"encoding/pem"
-	"errors"
 	"literatecarnival/logger"
 	"literatecarnival/pki"
 	"literatecarnival/proto"
 	"literatecarnival/router"
 	"literatecarnival/types"
+
+	protobuf "github.com/golang/protobuf/proto"
 )
 
 const (
@@ -26,8 +27,10 @@ type Node struct {
 	PriKey types.PrivateKey
 	// Routing table, should not be access from other code
 	router *router.Router
-	// Message channel
-	message chan []byte
+	// incoming message channel
+	Incoming chan proto.Packet
+	// outgoing message channel
+	Outgoing chan proto.Packet
 }
 
 func count_preceding_zero(hash []byte) int {
@@ -79,8 +82,28 @@ func NewNode(size int) IPFSRouting {
 	return &node
 }
 
-func SendPacket(packet types.Packet) {
-
+func (node *Node) Serve() {
+	for {
+		packet := <-node.Incoming
+		name := packet.GetHeader().GetName()
+		switch name {
+		case PING:
+			return
+		case PONG:
+			return
+		case FIND_NODE:
+			lookup_node := &proto.NODE{}
+			err := protobuf.Unmarshal(packet.GetData(), lookup_node)
+			if err != nil {
+				logger.DefaultLogger.Fatalln(err)
+			}
+			// Calls FindPeer on the node itself to find the node
+			node.FindPeer(lookup_node.NodeId)
+			return
+		case NODE:
+			return
+		}
+	}
 }
 
 func (node *Node) Ping(nodeId types.NodeId) (*types.NodeId, error) {
@@ -95,27 +118,6 @@ func (node *Node) CurrentDistance(nodeId types.NodeId) (int, error) {
 
 	}
 	return int(binary.BigEndian.Uint64(distanceBytes)), nil
-}
-
-func Distance(x types.NodeId, y types.NodeId) (int, error) {
-	distanceBytes, err := xorId(x, y)
-	if err != nil {
-		logger.DefaultLogger.Fatalln(err)
-		return -1, err
-	}
-	return int(binary.BigEndian.Uint64(distanceBytes)), nil
-}
-
-func xorId(x types.NodeId, y types.NodeId) ([]byte, error) {
-	if len(x) != len(y) {
-		return nil, errors.New("Length of the node id are not the same")
-	}
-	result := make([]byte, len(x))
-	for i := range len(x) {
-		xor := x[i] ^ y[i]
-		result[i] = xor
-	}
-	return result, nil
 }
 
 func (node *Node) FindPeer(nodeId types.NodeId) (*proto.NODE, error) {
@@ -138,13 +140,15 @@ func (node *Node) FindPeer(nodeId types.NodeId) (*proto.NODE, error) {
 			logger.DefaultLogger.Fatalln(err)
 			return nil, err
 		}
-
 		if distance == 0 {
 			return buckets[i], nil
 		} else {
-			// Send UDP request to other nodes and wait on the channel to hear back
-		}
 
+		}
 	}
+
+	// Need to make a channel that will hanels the respond from other nodes
+
+	// It will hit here if it was not find in current bucket
 	return &proto.NODE{}, nil
 }

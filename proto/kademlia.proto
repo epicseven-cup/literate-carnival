@@ -3,20 +3,27 @@ package proto;
 
 option go_package = "../proto";
 
-message PING {
-    bytes NodeId = 1;
+enum PacketType {
+	PING = 0;
+	PONG = 1;
+	FIND_NODE = 2;
+	NODE = 3;
 }
 
-message PONG {
-    bytes NodeId = 1;
+message Source {
+	string Address = 1;
+	bytes NodeId = 2;
 }
 
-message FIND_NODE {
-    bytes NodeId = 1;
+message Value {
+	bytes Hash = 1;
+	bytes Content = 2;
 }
 
-message NODE {
-    string Address = 1;
-    int32 Port = 2;
-    bytes NodeId = 3;
+message Packet {
+	PacketType Type = 1;
+	Source Source = 2;
+	string Id = 3;
+	bytes NodeId = 4;
+	optional Value Value = 5;
 }
