@@ -10,6 +10,7 @@ import (
 	"literatecarnival/proto"
 	"literatecarnival/router"
 	"literatecarnival/types"
+	"net"
 
 	protobuf "github.com/golang/protobuf/proto"
 )
@@ -27,10 +28,12 @@ type Node struct {
 	PriKey types.PrivateKey
 	// Routing table, should not be access from other code
 	router *router.Router
+	// Socket
+	socket *net.UDPConn
 	// incoming message channel
-	Incoming chan proto.Packet
+	incoming chan *proto.Packet
 	// outgoing message channel
-	Outgoing chan proto.Packet
+	outgoing chan *proto.Packet
 }
 
 func count_preceding_zero(hash []byte) int {
@@ -46,7 +49,7 @@ func count_preceding_zero(hash []byte) int {
 	return preceding_zero
 }
 
-func NewNode(size int) IPFSRouting {
+func NewNode(address *net.UDPAddr, size int) IPFSRouting {
 	var nodeId []byte
 	var pubKey_bytes, privKey_bytes []byte
 	for count_preceding_zero(nodeId) < DIFFICULTY {
@@ -74,33 +77,37 @@ func NewNode(size int) IPFSRouting {
 		nodeId = hash.Sum(nil)
 	}
 	node := Node{
-		NodeId: nodeId,
-		PubKey: pubKey_bytes,
-		PriKey: privKey_bytes,
-		router: router.NewRouter(size),
+		NodeId:   nodeId,
+		PubKey:   pubKey_bytes,
+		PriKey:   privKey_bytes,
+		router:   router.NewRouter(size),
+		incoming: make(chan *proto.Packet),
+		outgoing: make(chan *proto.Packet),
 	}
 	return &node
 }
 
 func (node *Node) Serve() {
 	for {
-		packet := <-node.Incoming
-		name := packet.GetHeader().GetName()
+		data := make([]byte, BLOCK_SIZE)
+		bytesRead, address, err := node.socket.ReadFromUDP(data)
+		if err != nil {
+			logger.DefaultLogger.Fatalln(err)
+		}
+		logger.DefaultLogger.Println("New Message arrived, from %s. Size: %d", address.String(), bytesRead)
+		packet := proto.Packet{}
+		err = protobuf.Unmarshal(data, &packet)
+		name := packet.GetType()
 		switch name {
-		case PING:
+		case proto.PacketType_PING:
 			return
-		case PONG:
+		case proto.PacketType_PONG:
 			return
-		case FIND_NODE:
-			lookup_node := &proto.NODE{}
-			err := protobuf.Unmarshal(packet.GetData(), lookup_node)
-			if err != nil {
-				logger.DefaultLogger.Fatalln(err)
-			}
+		case proto.PacketType_FIND_NODE:
 			// Calls FindPeer on the node itself to find the node
-			node.FindPeer(lookup_node.NodeId)
+			node.FindPeer(packet.GetNodeId())
 			return
-		case NODE:
+		case proto.PacketType_NODE:
 			return
 		}
 	}

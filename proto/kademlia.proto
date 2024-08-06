@@ -24,6 +24,6 @@ message Packet {
 	PacketType Type = 1;
 	Source Source = 2;
 	string Id = 3;
-	bytes NodeId = 4;
+	optional bytes Key = 4;
 	optional Value Value = 5;
 }
